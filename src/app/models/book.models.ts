@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
 import { Genre, IBook } from "../interface/book.interface";
 
+
 const bookSchema = new Schema<IBook>(
   {
     title: { type: String, required: true },
@@ -25,16 +26,21 @@ const bookSchema = new Schema<IBook>(
   }
 );
 
+
+bookSchema.pre("save", function (next) {
+  this.available = this.copies > 0;
+  next();
+});
+
+
 bookSchema.statics.updateAvailability = async function (bookId: string) {
   const book = await this.findById(bookId);
   if (book) {
-    if (book.copies <= 0) {
-      book.available = false;
-      await book.save();
-    }
+    book.available = book.copies > 0;
+    await book.save();
   }
 };
 
-const Book = model<IBook>('Book', bookSchema);
+const Book = model<IBook>("Book", bookSchema);
 
 export default Book;
