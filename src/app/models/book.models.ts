@@ -20,6 +20,7 @@ const bookSchema = new Schema<IBook>(
     available: { type: Boolean, default: true },
   },
   {
+    versionKey: false,
     timestamps: true,
   }
 );
