@@ -8,7 +8,7 @@ dotenv_1.default.config();
 const app_1 = __importDefault(require("./app"));
 const mongoose_1 = __importDefault(require("mongoose"));
 let server;
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 async function main() {
     try {
         await mongoose_1.default.connect(process.env.DATABASE_URL);

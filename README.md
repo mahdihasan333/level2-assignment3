@@ -2,6 +2,8 @@
 
 A backend API project built using **Express**, **TypeScript**, and **MongoDB (Mongoose)** that allows users to manage library books and borrowing records.
 
+🌐 **Live Link**: [https://assignment3-six-plum.vercel.app](https://assignment3-six-plum.vercel.app)
+
 ---
 
 ## 🚀 Features
