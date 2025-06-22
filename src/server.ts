@@ -13,7 +13,8 @@ async function main() {
         await mongoose.connect(process.env.DATABASE_URL as string);
         console.log('Connected to MongoDB Using Mongoose!')
         server = app.listen(PORT, ()=> {
-            console.log(`App is listening on post ${PORT}`)
+            console.log(`App is listening on port ${PORT}`);
+
         })
     } catch (error) {
         console.log(error)
