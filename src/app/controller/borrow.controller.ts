@@ -3,15 +3,17 @@ import Borrow from "../models/borrow.models";
 import Book from "../models/book.models";
 import { borrowValidationSchema } from "../validation/borrow.validation";
 
-export const borrowRoutes = express.Router();
+export const borrowRoutes= express.Router();
 
-// ✅ Borrow a Book (POST)
+
+// ✅ POST /borrow - Borrow a book
 borrowRoutes.post("/borrow", async (req: Request, res: Response) => {
   try {
+    // 1. Validate request
     const parsed = borrowValidationSchema.parse(req.body);
     const { book, quantity, dueDate } = parsed;
 
-    // 1. Find book
+    // 2. Find the book
     const foundBook = await Book.findById(book);
     if (!foundBook) {
       return res.status(404).json({
@@ -21,7 +23,7 @@ borrowRoutes.post("/borrow", async (req: Request, res: Response) => {
       });
     }
 
-    // 2. Check if enough copies
+    // 3. Check availability
     if (foundBook.copies < quantity) {
       return res.status(400).json({
         success: false,
@@ -30,21 +32,17 @@ borrowRoutes.post("/borrow", async (req: Request, res: Response) => {
       });
     }
 
-    // 3. Deduct copies
+    // 4. Deduct copies
     foundBook.copies -= quantity;
-    // availability handled by pre-save middleware (optional fallback below)
     if (foundBook.copies === 0) {
       foundBook.available = false;
     }
-    await foundBook.save();
+    await foundBook.save(); // pre-save middleware will update 'available' too
 
-    // 4. Create borrow record
-    const borrow = await Borrow.create({
-      book,
-      quantity,
-      dueDate,
-    });
+    // 5. Create borrow record
+    const borrow = await Borrow.create({ book, quantity, dueDate });
 
+    // 6. Respond to client
     res.status(201).json({
       success: true,
       message: "Book borrowed successfully",
@@ -59,7 +57,7 @@ borrowRoutes.post("/borrow", async (req: Request, res: Response) => {
   }
 });
 
-// ✅ Borrow Summary (GET)
+// ✅ GET /borrow - Borrow Summary
 borrowRoutes.get("/borrow", async (req: Request, res: Response) => {
   try {
     const borrowSummary = await Borrow.aggregate([
@@ -71,12 +69,7 @@ borrowRoutes.get("/borrow", async (req: Request, res: Response) => {
           as: "bookDetails",
         },
       },
-      {
-        $unwind: {
-          path: "$bookDetails",
-          preserveNullAndEmptyArrays: false,
-        },
-      },
+      { $unwind: "$bookDetails" },
       {
         $group: {
           _id: "$book",
@@ -103,7 +96,7 @@ borrowRoutes.get("/borrow", async (req: Request, res: Response) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Failed to retrieve borrowed books summary",
+      message: "Failed to retrieve borrow summary",
       error: err,
     });
   }
