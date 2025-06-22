@@ -1,23 +1,26 @@
+// src/controller/book.controller.ts
+
 import express, { Request, Response } from "express";
 import Book from "../models/book.models";
+import { bookValidationSchema } from "../validation/book.validation";
 
 export const booksRoutes = express.Router();
 
 booksRoutes.post("/books", async (req: Request, res: Response) => {
   try {
-    const body = req.body;
-    const book = await Book.create(body);
+    const parsed = bookValidationSchema.parse(req.body);
+    const book = await Book.create(parsed);
 
     res.status(201).json({
       success: true,
       message: "Book created successfully",
       data: book,
     });
-  } catch (err) {
+  } catch (err: any) {
     res.status(400).json({
       success: false,
       message: "Failed to create book",
-      error: err,
+      error: err.errors || err,
     });
   }
 });
@@ -71,7 +74,8 @@ booksRoutes.get("/books/:bookId", async (req: Request, res: Response) => {
 
 booksRoutes.patch("/books/:bookId", async (req: Request, res: Response) => {
   try {
-    const book = await Book.findByIdAndUpdate(req.params.bookId, req.body, {
+    const parsed = bookValidationSchema.partial().parse(req.body);
+    const book = await Book.findByIdAndUpdate(req.params.bookId, parsed, {
       new: true,
     });
     res.status(200).json({
@@ -79,18 +83,18 @@ booksRoutes.patch("/books/:bookId", async (req: Request, res: Response) => {
       message: "Book updated successfully",
       data: book,
     });
-  } catch (err) {
+  } catch (err: any) {
     res.status(400).json({
       success: false,
       message: "Failed to update book",
-      error: err,
+      error: err.errors || err,
     });
   }
 });
 
 booksRoutes.delete("/books/:bookId", async (req: Request, res: Response) => {
   try {
-    const book = await Book.findByIdAndDelete(req.params.bookId);
+    await Book.findByIdAndDelete(req.params.bookId);
     res.status(200).json({
       success: true,
       message: "Book deleted successfully",

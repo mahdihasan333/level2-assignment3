@@ -25,6 +25,16 @@ const bookSchema = new Schema<IBook>(
   }
 );
 
+bookSchema.statics.updateAvailability = async function (bookId: string) {
+  const book = await this.findById(bookId);
+  if (book) {
+    if (book.copies <= 0) {
+      book.available = false;
+      await book.save();
+    }
+  }
+};
+
 const Book = model<IBook>('Book', bookSchema);
 
 export default Book;
