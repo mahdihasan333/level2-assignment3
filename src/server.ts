@@ -1,12 +1,23 @@
-import express from "express";
-import cors from "cors";
+import dotenv from 'dotenv';
+dotenv.config();
+import  {Server}  from "http";
+import app from "./app";
+import mongoose from "mongoose";
 
-const app = express()
+let server : Server;
 
-app.use(cors())
-app.use(express.json())
+const PORT = process.env.PORT;
 
-app.listen(5000, ()=> {
-    console.log(`server is running!!`)
-})
+async function main() {
+    try {
+        await mongoose.connect(process.env.DATABASE_URL as string);
+        console.log('Connected to MongoDB Using Mongoose!')
+        server = app.listen(PORT, ()=> {
+            console.log(`App is listening on post ${PORT}`)
+        })
+    } catch (error) {
+        console.log(error)
+    }
+}
 
+main()
